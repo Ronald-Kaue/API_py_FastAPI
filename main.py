@@ -48,4 +48,4 @@ def deletar(id: int, db: Session = Depends(get_db)):
     msg = crud.deletar_mensagem(db, id)
     if not msg:
         raise HTTPException(status_code=404, detail="Mensagem não encontrada")
-    return {"ok": True}
+    return {"INFO": "Mensagem deletada com sucesso"}
