@@ -11,12 +11,4 @@ class Usuario(Base):
     senha_hash = Column(String, nullable=False)
     
     mensagens = relationship("Mensagem", back_populates="autor")
-
-class Mensagem(Base):
-    __tablename__ = "mensagens"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    conteudo = Column(String, nullable=False)
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
-
-    autor = relationship("Usuario", back_populates="mensagens")
+    comentario = relationship("Comentario", back_populates="autor")

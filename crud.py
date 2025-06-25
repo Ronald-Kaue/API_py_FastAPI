@@ -1,7 +1,12 @@
 from sqlalchemy.orm import Session
-from models import Usuario, Mensagem
-from schemas import UsuarioCreate, MensagemCreate
+from models.usuario import Usuario
+from models.mensagem import Mensagem
+from models.comentario import Comentario
+from schemas.mensagem import MensagemCreate
+from schemas.usuario import UsuarioCreate
+from schemas.comentario import ComentarioCreate
 from passlib.hash import bcrypt
+from sqlalchemy import select
 
 def criar_usuario(db: Session, usuario: UsuarioCreate):
     senha_hash = bcrypt.hash(usuario.senha)
@@ -15,7 +20,8 @@ def get_usuario_por_email(db: Session, email: str):
     return db.query(Usuario).filter(Usuario.email == email).first()
 
 def listar_mensagens(db: Session):
-    return db.query(Mensagem).all()
+    # return db.query(Mensagem).all()
+    return db.session.scalars(select(Mensagem.where)).all()
 
 def criar_mensagem(db: Session, usuario_id: int, mensagem: MensagemCreate):
     db_mensagem = Mensagem(conteudo=mensagem.conteudo, usuario_id=usuario_id)
@@ -41,3 +47,10 @@ def deletar_mensagem(db: Session, id: int):
         db.delete(msg)
         db.commit()
     return msg
+
+def criar_comentario(db: Session, mensagem_id: int, comentario: ComentarioCreate):
+    db_comentario = Comentario(conteudo=comentario.conteudo, mensagem_id=mensagem_id)
+    db.add(db_comentario)
+    db.commit()
+    db.refresh(db_comentario)
+    return db_comentario

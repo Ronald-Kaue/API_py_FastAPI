@@ -19,15 +19,3 @@ class UsuarioResponse(UsuarioBase):
     id: int
     class Config:
         orm_mode = True
-
-class MensagemBase(BaseModel):
-    conteudo: str
-
-class MensagemCreate(MensagemBase):
-    pass
-
-class MensagemResponse(MensagemBase):
-    id: int
-    usuario_id: int
-    class Config:
-        orm_mode = True
