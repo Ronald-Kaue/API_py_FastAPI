@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-import re
+from ormbase import ORMBase
 
 class MensagemBase(BaseModel):
     conteudo: str
@@ -7,8 +7,6 @@ class MensagemBase(BaseModel):
 class MensagemCreate(MensagemBase):
     pass
 
-class MensagemResponse(MensagemBase):
+class MensagemResponse(MensagemBase, ORMBase):
     id: int
     usuario_id: int
-    class Config:
-        orm_mode = True

@@ -12,13 +12,13 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 @app.post("/usuarios", response_model=UsuarioResponse)
-def criar_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
+def criar_usuario_endpoint(usuario: UsuarioCreate, db: Session = Depends(get_db)):
     if get_usuario_por_email(db, usuario.email):
         raise HTTPException(status_code=400, detail="Email já cadastrado")
     return criar_usuario(db, usuario)
 
 @app.post("/usuarios/{usuario_id}/mensagens", response_model=MensagemResponse)
-def criar_mensagem(usuario_id: int, mensagem: MensagemCreate, db: Session = Depends(get_db)):
+def criar_mensagem_endpoint(usuario_id: int, mensagem: MensagemCreate, db: Session = Depends(get_db)):
     return criar_mensagem(db, usuario_id, mensagem)
 
 @app.get("/mensagens", response_model=list[MensagemResponse])
@@ -26,26 +26,26 @@ def listar(db: Session = Depends(get_db)):
     return listar_mensagens(db)
 
 @app.get("/mensagens/{id}", response_model=MensagemResponse)
-def get_mensagem(id: int, db: Session = Depends(get_db)):
+def get_mensagem_endpoint(id: int, db: Session = Depends(get_db)):
     msg = get_mensagem(db, id)
     if not msg:
         raise HTTPException(status_code=404, detail="Mensagem não encontrada")
     return msg
 
 @app.put("/mensagens/{id}", response_model=MensagemResponse)
-def update_mensagem(id: int, mensagem: MensagemCreate, db: Session = Depends(get_db)):
+def update_mensagem_endpoint(id: int, mensagem: MensagemCreate, db: Session = Depends(get_db)):
     msg = atualizar_mensagem(db, id, mensagem.conteudo)
     if not msg:
         raise HTTPException(status_code=404, detail="Mensagem não encontrada")
     return msg
 
 @app.delete("/mensagens/{id}")
-def deletar(id: int, db: Session = Depends(get_db)):
+def deletar_endpoint(id: int, db: Session = Depends(get_db)):
     msg = deletar_mensagem(db, id)
     if not msg:
         raise HTTPException(status_code=404, detail="Mensagem não encontrada")
     return {"INFO": "Mensagem deletada com sucesso"}
 
-@app.post("/mensagens/{mensagem_id}/comentarios", response_model=MensagemResponse)
-def criar_comentario(mensagem_id: int, comentario: ComentarioCreate, db: Session = Depends(get_db)):
+@app.post("/mensagens/{mensagem_id}/comentarios", response_model=ComentarioResponse)
+def criar_comentario_endpoint(mensagem_id: int, comentario: ComentarioCreate, db: Session = Depends(get_db)):
     return criar_comentario(db, mensagem_id, comentario)

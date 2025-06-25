@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-import re
+from ormbase import ORMBase
 
 class ComentarioBase(BaseModel):
     conteudo: str
@@ -7,8 +7,6 @@ class ComentarioBase(BaseModel):
 class ComentarioCreate(ComentarioBase):
     pass
 
-class ComentarioResponse(ComentarioBase):
+class ComentarioResponse(ComentarioBase, ORMBase):
     id: int
-    usuario_id: int
-    class Config:
-        orm_mode = True
+    mensagem_id: int

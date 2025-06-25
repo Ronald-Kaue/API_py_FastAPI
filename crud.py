@@ -20,8 +20,7 @@ def get_usuario_por_email(db: Session, email: str):
     return db.query(Usuario).filter(Usuario.email == email).first()
 
 def listar_mensagens(db: Session):
-    # return db.query(Mensagem).all()
-    return db.session.scalars(select(Mensagem.where)).all()
+    return db.scalars(select(Mensagem)).all()
 
 def criar_mensagem(db: Session, usuario_id: int, mensagem: MensagemCreate):
     db_mensagem = Mensagem(conteudo=mensagem.conteudo, usuario_id=usuario_id)

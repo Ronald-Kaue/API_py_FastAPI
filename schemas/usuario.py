@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr, validator
+from ormbase import ORMBase
 import re
 
 class UsuarioBase(BaseModel):
@@ -15,7 +16,5 @@ class UsuarioCreate(UsuarioBase):
             raise ValueError("A senha deve conter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e caractere especial.")
         return v
 
-class UsuarioResponse(UsuarioBase):
+class UsuarioResponse(UsuarioBase, ORMBase):
     id: int
-    class Config:
-        orm_mode = True
