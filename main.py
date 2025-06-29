@@ -57,3 +57,17 @@ def criar_comentario_with_user_endpoint(usuario_id:int, mensagem_id: int, coment
 @app.get("/comentarios", response_model=list[ComentarioResponse])
 def listar(db: Session = Depends(get_db)):
     return listar_comentario(db)
+
+@app.put("/comentarios/{id}", response_model=ComentarioResponse)
+def update_comentario_endpoint(id: int, comentario: ComentarioCreate, db: Session = Depends(get_db)):
+    commentary = atualizar_comentario(db, id, comentario.conteudo)
+    if not commentary:
+        raise HTTPException(status_code=404, detail="Comentário não encontrada")
+    return commentary
+
+@app.delete("/comentarios/{id}")
+def deletar_endpoint(id: int, db: Session = Depends(get_db)):
+    commentary = deletar_comentario(db, id)
+    if not commentary:
+        raise HTTPException(status_code=404, detail="Comentário não encontrada")
+    return {"INFO": "Comentário deletada com sucesso"}

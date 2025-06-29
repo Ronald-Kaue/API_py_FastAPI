@@ -63,3 +63,21 @@ def criar_comentario_com_user(db: Session, mensagem_id: int, usuario_id: int, co
 
 def listar_comentario(db: Session):
     return db.scalars(select(Comentario)).all()
+
+def get_comentario(db: Session, id: int):
+    return db.query(Comentario).filter(Comentario.id == id).first()
+
+def atualizar_comentario(db: Session, id: int, conteudo: str):
+    commentary = get_comentario(db, id)
+    if commentary:
+        commentary.conteudo = conteudo
+        db.commit()
+        db.refresh(commentary)
+    return commentary
+
+def deletar_comentario(db: Session, id: int):
+    commentary = get_comentario(db, id)
+    if commentary:
+        db.delete(commentary)
+        db.commit()
+    return commentary
