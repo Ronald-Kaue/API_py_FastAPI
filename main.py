@@ -4,7 +4,7 @@ from models.usuario import Usuario
 from schemas.usuario import UsuarioResponse, UsuarioCreate
 from schemas.mensagem import MensagemResponse, MensagemCreate
 from schemas.comentario import ComentarioResponse, ComentarioCreate
-from crud import criar_usuario, get_usuario_por_email, listar_mensagens, criar_mensagem, get_mensagem, atualizar_mensagem, deletar_mensagem, criar_comentario
+from crud import *
 from database import engine, Base, get_db
 
 Base.metadata.create_all(bind=engine)
@@ -49,3 +49,11 @@ def deletar_endpoint(id: int, db: Session = Depends(get_db)):
 @app.post("/mensagens/{mensagem_id}/comentarios", response_model=ComentarioResponse)
 def criar_comentario_endpoint(mensagem_id: int, comentario: ComentarioCreate, db: Session = Depends(get_db)):
     return criar_comentario(db, mensagem_id, comentario)
+
+@app.post("/usuario/{usuario_id}/mensagens/{mensagem_id}/comentarios", response_model=ComentarioResponse)
+def criar_comentario_with_user_endpoint(usuario_id:int, mensagem_id: int, comentario: ComentarioCreate, db: Session = Depends(get_db)):
+    return criar_comentario_com_user(db, mensagem_id, usuario_id, comentario)
+
+@app.get("/comentarios", response_model=list[ComentarioResponse])
+def listar(db: Session = Depends(get_db)):
+    return listar_comentario(db)
