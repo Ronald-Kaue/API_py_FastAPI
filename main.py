@@ -1,15 +1,24 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
+import jwt
 from sqlalchemy.orm import Session
 from models.usuario import Usuario
 from schemas.usuario import UsuarioResponse, UsuarioCreate
 from schemas.mensagem import MensagemResponse, MensagemCreate
 from schemas.comentario import ComentarioResponse, ComentarioCreate
+from schemas.token import Token
 from crud import *
 from database import engine, Base, get_db
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+@app.post("/token", response_model=Token)
+def login(form_data: OAuth2PasswordRequestForm=Depends(), db: Session = Depends(get_db)):
+    user = Session.scalar(select(Usuario).where(Usuario.email == form_data.username))
+    if not user or not verify_password(form_data, Usuario.senha_hash):
+        raise HTTPException(status_code=400, detail="Email ou Senha Inválidos")
 
 @app.post("/usuarios", response_model=UsuarioResponse)
 def criar_usuario_endpoint(usuario: UsuarioCreate, db: Session = Depends(get_db)):

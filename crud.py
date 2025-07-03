@@ -5,11 +5,11 @@ from models.comentario import Comentario
 from schemas.mensagem import MensagemCreate
 from schemas.usuario import UsuarioCreate
 from schemas.comentario import ComentarioCreate
-from passlib.hash import bcrypt
 from sqlalchemy import select
+from security import get_password_hash, verify_password
 
 def criar_usuario(db: Session, usuario: UsuarioCreate):
-    senha_hash = bcrypt.hash(usuario.senha)
+    senha_hash = get_password_hash(usuario.senha)
     db_usuario = Usuario(nome=usuario.nome, email=usuario.email, senha_hash=senha_hash)
     db.add(db_usuario)
     db.commit()
