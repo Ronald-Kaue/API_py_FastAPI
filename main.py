@@ -9,6 +9,7 @@ from schemas.comentario import ComentarioResponse, ComentarioCreate
 from schemas.token import Token
 from crud import *
 from database import engine, Base, get_db
+from security import create_access_token
 
 Base.metadata.create_all(bind=engine)
 
@@ -19,6 +20,8 @@ def login(form_data: OAuth2PasswordRequestForm=Depends(), db: Session = Depends(
     user = Session.scalar(select(Usuario).where(Usuario.email == form_data.username))
     if not user or not verify_password(form_data, Usuario.senha_hash):
         raise HTTPException(status_code=400, detail="Email ou Senha Inválidos")
+    access_token = create_access_token(data={'sub': Usuario.email})
+    return {'access_token': access_token, 'token_type': 'Bearer'}
 
 @app.post("/usuarios", response_model=UsuarioResponse)
 def criar_usuario_endpoint(usuario: UsuarioCreate, db: Session = Depends(get_db)):
