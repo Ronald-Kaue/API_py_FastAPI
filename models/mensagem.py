@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
+from pydantic import ConfigDict
 
 class Mensagem(Base):
     __tablename__ = "mensagens"
@@ -11,3 +12,5 @@ class Mensagem(Base):
 
     autor = relationship("Usuario", back_populates="mensagens")
     comentario = relationship("Comentario", back_populates="mensagens")
+
+    model_config = ConfigDict(from_attributes=True)

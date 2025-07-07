@@ -35,7 +35,12 @@ def criar_usuario_endpoint(usuario: UsuarioCreate, db: Session = Depends(get_db)
 # Mensagens
 
 @app.post("/usuarios/{usuario_id}/mensagens", response_model=MensagemResponse)
-def criar_mensagem_endpoint(usuario_id: int, mensagem: MensagemCreate, db: Session = Depends(get_db)):
+def criar_mensagem_endpoint(usuario_id: int, mensagem: MensagemCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
+    if current_user.id != usuario_id:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='Not enough permissions'
+        )
     return criar_mensagem(db, usuario_id, mensagem)
 
 @app.get("/mensagens", response_model=list[MensagemResponse])
@@ -44,7 +49,8 @@ def listar(db: Session = Depends(get_db)):
 
 @app.get("/mensagens/{id}", response_model=MensagemResponse)
 def get_mensagem_endpoint(id: int, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    if current_user.id != id:
+    mensagem_var = get_mensagem(db, id)
+    if current_user.id != mensagem_var.usuario_id:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Not enough permissions'
@@ -56,7 +62,8 @@ def get_mensagem_endpoint(id: int, db: Session = Depends(get_db), current_user=D
 
 @app.put("/mensagens/{id}", response_model=MensagemResponse)
 def update_mensagem_endpoint(id: int, mensagem: MensagemCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    if current_user.id != id:
+    mensagem_var = get_mensagem(db, id)
+    if current_user.id != mensagem_var.usuario_id:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Not enough permissions'
@@ -68,10 +75,10 @@ def update_mensagem_endpoint(id: int, mensagem: MensagemCreate, db: Session = De
 
 @app.delete("/mensagens/{id}")
 def deletar_endpoint(id: int, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    mensagem = get_mensagem(db, id)
+    mensagem_var = get_mensagem(db, id)
     if not mensagem:
         raise HTTPException(status_code=404, detail="Mensagem não encontrada")
-    if current_user.id != mensagem.usuario_id:
+    if current_user.id != mensagem_var.usuario_id:
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
             detail='Not enough permissions'
@@ -87,7 +94,7 @@ def criar_comentario_endpoint(mensagem_id: int, comentario: ComentarioCreate, db
 
 @app.post("/usuario/{usuario_id}/mensagens/{mensagem_id}/comentarios", response_model=ComentarioResponse)
 def criar_comentario_with_user_endpoint(usuario_id:int, mensagem_id: int, comentario: ComentarioCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    if current_user.id != id:
+    if current_user.id != usuario_id:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Not enough permissions'
@@ -98,26 +105,35 @@ def criar_comentario_with_user_endpoint(usuario_id:int, mensagem_id: int, coment
 def listar(db: Session = Depends(get_db)):
     return listar_comentario(db)
 
-@app.put("/comentarios/{id}", response_model=ComentarioResponse)
+@app.put("/comentarios/{id}", response_model=ComentarioResponse) 
 def update_comentario_endpoint(id: int, comentario: ComentarioCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    if current_user.id != id:
+    comentario_var = get_comentario(db, id)
+    if current_user.id != comentario_var.usuario_id:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Not enough permissions'
         )
-    commentary = atualizar_comentario(db, current_user.id, comentario.conteudo)
-    if not commentary:
+    
+    if not get_comentario(id=id):
         raise HTTPException(status_code=404, detail="Comentário não encontrada")
+    
+    commentary = atualizar_comentario(db, id, comentario.conteudo)
+        
     return commentary
 
 @app.delete("/comentarios/{id}")
 def deletar_endpoint(id: int, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    if current_user.id != id:
+    comentario = get_comentario(db, id)
+
+    if current_user.id != comentario.usuario_id:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Not enough permissions'
         )
-    commentary = deletar_comentario(db, current_user.id)
-    if not commentary:
+    
+    if not comentario:
         raise HTTPException(status_code=404, detail="Comentário não encontrada")
-    return {"INFO": "Comentário deletada com sucesso"}
+    
+    commentary = deletar_comentario(db, id)
+        
+    return commentary

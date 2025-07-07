@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from ormbase import ORMBase
+from pydantic import BaseModel, ConfigDict
+
 
 class MensagemBase(BaseModel):
     conteudo: str
@@ -7,6 +7,8 @@ class MensagemBase(BaseModel):
 class MensagemCreate(MensagemBase):
     pass
 
-class MensagemResponse(MensagemBase, ORMBase):
+class MensagemResponse(MensagemBase):
     id: int
     usuario_id: int
+
+    model_config = ConfigDict(from_attributes=True)
