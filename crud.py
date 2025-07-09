@@ -6,15 +6,18 @@ from schemas.mensagem import MensagemCreate
 from schemas.usuario import UsuarioCreate
 from schemas.comentario import ComentarioCreate
 from sqlalchemy import select
-from security import get_password_hash, verify_password
+from security import get_password_hash
 
 def criar_usuario(db: Session, usuario: UsuarioCreate):
     senha_hash = get_password_hash(usuario.senha)
-    db_usuario = Usuario(nome=usuario.nome, email=usuario.email, senha_hash=senha_hash)
+    db_usuario = Usuario(nome=usuario.nome, email=usuario.email, senha_hash=senha_hash, role = usuario.role)
     db.add(db_usuario)
     db.commit()
     db.refresh(db_usuario)
     return db_usuario
+
+def get_usuario(db: Session, id: str):
+    return db.query(Usuario).filter(Usuario.id == id).first()
 
 def get_usuario_por_email(db: Session, email: str):
     return db.query(Usuario).filter(Usuario.email == email).first()

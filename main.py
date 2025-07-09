@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException
 from http import HTTPStatus
 from fastapi.security import OAuth2PasswordRequestForm
-import jwt
 from sqlalchemy.orm import Session
+from security import verify_password
 from models.usuario import Usuario
 from schemas.usuario import UsuarioResponse, UsuarioCreate
 from schemas.mensagem import MensagemResponse, MensagemCreate
@@ -36,7 +36,8 @@ def criar_usuario_endpoint(usuario: UsuarioCreate, db: Session = Depends(get_db)
 
 @app.post("/usuarios/{usuario_id}/mensagens", response_model=MensagemResponse)
 def criar_mensagem_endpoint(usuario_id: int, mensagem: MensagemCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    if current_user.id != usuario_id:
+    usuario = get_usuario(db, usuario_id)
+    if current_user.id != usuario_id or usuario.role != 'admin':
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Not enough permissions'
@@ -49,12 +50,6 @@ def listar(db: Session = Depends(get_db)):
 
 @app.get("/mensagens/{id}", response_model=MensagemResponse)
 def get_mensagem_endpoint(id: int, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    mensagem_var = get_mensagem(db, id)
-    if current_user.id != mensagem_var.usuario_id:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='Not enough permissions'
-        )
     msg = get_mensagem(db, current_user.id)
     if not msg:
         raise HTTPException(status_code=404, detail="Mensagem não encontrada")
@@ -63,7 +58,8 @@ def get_mensagem_endpoint(id: int, db: Session = Depends(get_db), current_user=D
 @app.put("/mensagens/{id}", response_model=MensagemResponse)
 def update_mensagem_endpoint(id: int, mensagem: MensagemCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
     mensagem_var = get_mensagem(db, id)
-    if current_user.id != mensagem_var.usuario_id:
+    usuario = get_usuario(db, mensagem_var.usuario_id)
+    if current_user.id != mensagem_var.usuario_id or usuario.role != 'admin':
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Not enough permissions'
@@ -76,9 +72,10 @@ def update_mensagem_endpoint(id: int, mensagem: MensagemCreate, db: Session = De
 @app.delete("/mensagens/{id}")
 def deletar_endpoint(id: int, db: Session = Depends(get_db), current_user=Depends(current_user)):
     mensagem_var = get_mensagem(db, id)
-    if not mensagem:
+    usuario = get_usuario(db, mensagem_var.usuario_id)
+    if not mensagem_var:
         raise HTTPException(status_code=404, detail="Mensagem não encontrada")
-    if current_user.id != mensagem_var.usuario_id:
+    if current_user.id != mensagem_var.usuario_id or usuario.role != 'admin':
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN,
             detail='Not enough permissions'
@@ -94,7 +91,8 @@ def criar_comentario_endpoint(mensagem_id: int, comentario: ComentarioCreate, db
 
 @app.post("/usuario/{usuario_id}/mensagens/{mensagem_id}/comentarios", response_model=ComentarioResponse)
 def criar_comentario_with_user_endpoint(usuario_id:int, mensagem_id: int, comentario: ComentarioCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    if current_user.id != usuario_id:
+    usuario = get_usuario(db, usuario_id)
+    if current_user.id != usuario_id or usuario.role != 'admin':
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Not enough permissions'
@@ -108,7 +106,8 @@ def listar(db: Session = Depends(get_db)):
 @app.put("/comentarios/{id}", response_model=ComentarioResponse) 
 def update_comentario_endpoint(id: int, comentario: ComentarioCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
     comentario_var = get_comentario(db, id)
-    if current_user.id != comentario_var.usuario_id:
+    usuario = get_usuario(db, comentario_var.usuario_id)
+    if current_user.id != comentario_var.usuario_id or usuario.role != 'admin':
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Not enough permissions'
@@ -124,8 +123,8 @@ def update_comentario_endpoint(id: int, comentario: ComentarioCreate, db: Sessio
 @app.delete("/comentarios/{id}")
 def deletar_endpoint(id: int, db: Session = Depends(get_db), current_user=Depends(current_user)):
     comentario = get_comentario(db, id)
-
-    if current_user.id != comentario.usuario_id:
+    usuario = get_usuario(db, comentario.usuario_id)
+    if current_user.id != comentario.usuario_id or usuario.role != 'admin':
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Not enough permissions'

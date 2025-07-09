@@ -10,6 +10,7 @@ class Usuario(Base):
     nome = Column(String, nullable=False)
     email = Column(String, unique=True, index=True)
     senha_hash = Column(String, nullable=False)
+    role = Column(String, nullable=False, default = "user")
     
     mensagens = relationship("Mensagem", back_populates="autor")
     comentario = relationship("Comentario", back_populates="autor")

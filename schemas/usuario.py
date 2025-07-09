@@ -4,6 +4,7 @@ import re
 class UsuarioBase(BaseModel):
     nome: str
     email: EmailStr
+    role: str
 
 class UsuarioCreate(UsuarioBase):
     senha: str
