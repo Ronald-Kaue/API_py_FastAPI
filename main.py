@@ -48,8 +48,8 @@ def listar(db: Session = Depends(get_db)):
     return listar_mensagens(db)
 
 @app.get("/mensagens/{id}", response_model=MensagemResponse)
-def get_mensagem_endpoint(id: int, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    msg = get_mensagem(db, current_user.id)
+def get_mensagem_endpoint(id: int, db: Session = Depends(get_db)):
+    msg = get_mensagem(db, id)
     if not msg:
         raise HTTPException(status_code=404, detail="Mensagem não encontrada")
     return msg
