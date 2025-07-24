@@ -12,8 +12,6 @@ from crud import *
 from database import engine, Base, get_db
 from security import create_access_token, current_user
 
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI()
 
 @app.post("/token", response_model=Token)
