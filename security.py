@@ -11,11 +11,12 @@ from sqlalchemy.orm import Session
 from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta
 from models import usuario
+import os 
 
 pwd_context = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-SECRET_KEY = 'Super-Secret-Key'
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
