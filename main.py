@@ -60,9 +60,10 @@ def update_mensagem_endpoint(id: int, mensagem: MensagemCreate, db: Session = De
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Not enough permissions'
         )
-    msg = atualizar_mensagem(db, current_user.id, mensagem.conteudo)
     if not msg:
         raise HTTPException(status_code=404, detail="Mensagem não encontrada")
+    msg = atualizar_mensagem(db, current_user.id, mensagem.conteudo)
+    
     return msg
 
 @app.delete("/mensagens/{id}")
