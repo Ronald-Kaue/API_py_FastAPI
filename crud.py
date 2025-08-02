@@ -50,19 +50,19 @@ def deletar_mensagem(db: Session, id: int):
         db.commit()
     return msg
 
-def criar_comentario(db: Session, mensagem_id: int, comentario: ComentarioCreate):
-    db_comentario = Comentario(conteudo=comentario.conteudo, mensagem_id=mensagem_id)
+def criar_comentario(db: Session, mensagem_id: int, current_user, comentario: ComentarioCreate):
+    db_comentario = Comentario(conteudo=comentario.conteudo, mensagem_id=mensagem_id, autor_id=current_user.id)
     db.add(db_comentario)
     db.commit()
     db.refresh(db_comentario)
     return db_comentario
 
-def criar_comentario_com_user(db: Session, mensagem_id: int, usuario_id: int, comentario: ComentarioCreate):
-    db_comentario = Comentario(conteudo=comentario.conteudo, mensagem_id=mensagem_id, autor_id=usuario_id)
-    db.add(db_comentario)
-    db.commit()
-    db.refresh(db_comentario)
-    return db_comentario
+# def criar_comentario_com_user(db: Session, mensagem_id: int, usuario_id: int, comentario: ComentarioCreate):
+#     db_comentario = Comentario(conteudo=comentario.conteudo, mensagem_id=mensagem_id, autor_id=usuario_id)
+#     db.add(db_comentario)
+#     db.commit()
+#     db.refresh(db_comentario)
+#     return db_comentario
 
 def listar_comentario(db: Session):
     return db.scalars(select(Comentario)).all()

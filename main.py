@@ -82,17 +82,8 @@ def deletar_endpoint(id: int, db: Session = Depends(get_db), current_user=Depend
 # Comentarios
 
 @app.post("/mensagens/{mensagem_id}/comentarios", response_model=ComentarioResponse)
-def criar_comentario_endpoint(mensagem_id: int, comentario: ComentarioCreate, db: Session = Depends(get_db)):
-    return criar_comentario(db, mensagem_id, comentario)
-
-@app.post("/usuario/{usuario_id}/mensagens/{mensagem_id}/comentarios", response_model=ComentarioResponse)
-def criar_comentario_with_user_endpoint(usuario_id:int, mensagem_id: int, comentario: ComentarioCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    if current_user.id != usuario_id and current_user.role != 'admin':
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='Not enough permissions'
-        )
-    return criar_comentario_com_user(db, mensagem_id, current_user.id, comentario)
+def criar_comentario_endpoint(mensagem_id: int, comentario: ComentarioCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
+    return criar_comentario(db, mensagem_id, current_user, comentario)
 
 @app.get("/comentarios", response_model=list[ComentarioResponse])
 def listar(db: Session = Depends(get_db)):

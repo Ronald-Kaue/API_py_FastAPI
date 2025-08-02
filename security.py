@@ -12,13 +12,15 @@ from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta
 from models import usuario
 import os 
+from dotenv import load_dotenv
 
+load_dotenv()
 pwd_context = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
 def get_password_hash(password: str):
     return pwd_context.hash(password)
