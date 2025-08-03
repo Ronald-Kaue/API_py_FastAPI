@@ -1,4 +1,4 @@
-from fastapi import APIRouter, FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException
 from jose import JWTError, jwt
 from http import HTTPStatus
 from fastapi.security import OAuth2PasswordRequestForm
@@ -9,6 +9,8 @@ from schemas.usuario import UsuarioResponse, UsuarioCreate
 from schemas.mensagem import MensagemResponse, MensagemCreate
 from schemas.comentario import ComentarioResponse, ComentarioCreate
 from schemas.token import Token, RefreshTokenRequest
+from decorators.owner_or_admin_required import owner_or_admin_required
+from decorators.comentario_owner_or_admin_required import comentario_owner_or_admin_required
 from crud import *
 from database import engine, Base, get_db
 from security import create_access_token, create_refresh_token, current_user, SECRET_KEY, ALGORITHM
@@ -69,37 +71,24 @@ def get_mensagem_endpoint(id: int, db: Session = Depends(get_db)):
     return msg
 
 @app.put("/mensagens/{id}", response_model=MensagemResponse)
+@owner_or_admin_required(get_mensagem_owner_id)
 def update_mensagem_endpoint(id: int, mensagem: MensagemCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    mensagem_var = get_mensagem(db, id)
-    if current_user.id != mensagem_var.usuario_id and current_user.role != 'admin':
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='Not enough permissions'
-        )
-    if not msg:
-        raise HTTPException(status_code=404, detail="Mensagem não encontrada")
-    msg = atualizar_mensagem(db, current_user.id, mensagem.conteudo)
+    msg = atualizar_mensagem(db, id, mensagem.conteudo)
     
     return msg
 
 @app.delete("/mensagens/{id}")
+@owner_or_admin_required(get_mensagem_owner_id)
 def deletar_endpoint(id: int, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    mensagem_var = get_mensagem(db, id)
-    if not mensagem_var:
-        raise HTTPException(status_code=404, detail="Mensagem não encontrada")
-    if current_user.id != mensagem_var.usuario_id and current_user.role != 'admin':
-        raise HTTPException(
-            status_code=HTTPStatus.FORBIDDEN,
-            detail='Not enough permissions'
-        )
     deletar_mensagem(db, id)
+
     return {"INFO": "Mensagem deletada com sucesso"}
 
 # Comentarios
 
-@app.post("/mensagens/{mensagem_id}/comentarios", response_model=ComentarioResponse)
-def criar_comentario_endpoint(mensagem_id: int, comentario: ComentarioCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    return criar_comentario(db, mensagem_id, current_user, comentario)
+@app.post("/mensagens/{id}/comentarios", response_model=ComentarioResponse)
+def criar_comentario_endpoint(id: int, comentario: ComentarioCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
+    return criar_comentario(db, id, current_user, comentario)
 
 @app.get("/comentarios", response_model=list[ComentarioResponse])
 def listar(db: Session = Depends(get_db)):
@@ -109,34 +98,36 @@ def listar(db: Session = Depends(get_db)):
 def listar(id: int, db: Session = Depends(get_db)):
     return listar_comentario_by_msg(db, id)
 
-@app.put("/mensagens/{id}/comentarios/{id_comentario}", response_model=ComentarioResponse) 
+@app.put("/mensagens/{id}/comentarios/{id_comentario}", response_model=ComentarioResponse)
+@comentario_owner_or_admin_required(get_comentario_owner_id)
 def update_comentario_endpoint(id: int, id_comentario: int, comentario: ComentarioCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    comentario_var = get_comentario(db, id_comentario)
-    if current_user.id != comentario_var.usuario_id and current_user.role != 'admin':
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='Not enough permissions'
-        )
+    # comentario_var = get_comentario(db, id_comentario)
+    # if current_user.id != comentario_var.usuario_id and current_user.role != 'admin':
+    #     raise HTTPException(
+    #         status_code=HTTPStatus.BAD_REQUEST,
+    #         detail='Not enough permissions'
+    #     )
     
-    if not get_comentario(id=id_comentario):
-        raise HTTPException(status_code=404, detail="Comentário não encontrada")
+    # if not get_comentario(id=id_comentario):
+    #     raise HTTPException(status_code=404, detail="Comentário não encontrada")
     
     commentary = atualizar_comentario(db, id_comentario, comentario.conteudo)
         
     return commentary
 
 @app.delete("/mensagens/{id}/comentarios/{id_comentario}")
+@comentario_owner_or_admin_required(get_comentario_owner_id)
 def deletar_endpoint(id: int, id_comentario: int, db: Session = Depends(get_db), current_user=Depends(current_user)):
     comentario = get_comentario(db, id_comentario)
-    if current_user.id != comentario.usuario_id and current_user.role != 'admin':
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='Not enough permissions'
-        )
+    # if current_user.id != comentario.usuario_id and current_user.role != 'admin':
+    #     raise HTTPException(
+    #         status_code=HTTPStatus.BAD_REQUEST,
+    #         detail='Not enough permissions'
+    #     )
     
-    if not comentario:
-        raise HTTPException(status_code=404, detail="Comentário não encontrada")
+    # if not comentario:
+    #     raise HTTPException(status_code=404, detail="Comentário não encontrada")
     
     commentary = deletar_comentario(db, id_comentario)
         
-    return commentary
+    return {"INFO": "Comentário deletada com sucesso"}

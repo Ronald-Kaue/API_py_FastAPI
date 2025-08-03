@@ -5,8 +5,12 @@ from models.comentario import Comentario
 from schemas.mensagem import MensagemCreate
 from schemas.usuario import UsuarioCreate
 from schemas.comentario import ComentarioCreate
+from fastapi import HTTPException
 from sqlalchemy import select
 from security import get_password_hash
+
+
+# CRUDs mensagens
 
 def criar_usuario(db: Session, usuario: UsuarioCreate):
     senha_hash = get_password_hash(usuario.senha)
@@ -35,12 +39,24 @@ def criar_mensagem(db: Session, current_user, mensagem: MensagemCreate):
 def get_mensagem(db: Session, id: int):
     return db.query(Mensagem).filter(Mensagem.id == id).first()
 
+# Decorators mensagens
+
+def get_mensagem_owner_id(db, id):
+    mensagem = get_mensagem(db, id)
+    if not mensagem:
+        raise HTTPException(status_code=404, detail="Mensagem não encontrada")
+    return mensagem.usuario_id
+
+# CRUDs mensagens again
 def atualizar_mensagem(db: Session, id: int, conteudo: str):
     msg = get_mensagem(db, id)
     if msg:
         msg.conteudo = conteudo
         db.commit()
         db.refresh(msg)
+    if not msg:
+        raise HTTPException(status_code=404, detail="Mensagem não encontrada")
+    
     return msg
 
 def deletar_mensagem(db: Session, id: int):
@@ -48,10 +64,18 @@ def deletar_mensagem(db: Session, id: int):
     if msg:
         db.delete(msg)
         db.commit()
+    if not msg:
+        raise HTTPException(status_code=404, detail="Mensagem não encontrada")
     return msg
 
-def criar_comentario(db: Session, mensagem_id: int, current_user, comentario: ComentarioCreate):
-    db_comentario = Comentario(conteudo=comentario.conteudo, mensagem_id=mensagem_id, autor_id=current_user.id)
+# CRUDs comentarios
+
+def criar_comentario(db: Session, id: int, current_user, comentario: ComentarioCreate):
+    msg = get_mensagem(db, id)
+    if not msg:
+        raise HTTPException(status_code=404, detail="Mensagem não encontrada")
+    
+    db_comentario = Comentario(conteudo=comentario.conteudo, mensagem_id=id, autor_id=current_user.id)
     db.add(db_comentario)
     db.commit()
     db.refresh(db_comentario)
@@ -66,12 +90,24 @@ def listar_comentario_by_msg(db: Session, id: int):
 def get_comentario(db: Session, id: int):
     return db.query(Comentario).filter(Comentario.id == id).first()
 
+# Decorators comentarios
+
+def get_comentario_owner_id(db: Session, id_comentario: int):
+    comentario = get_comentario(db, id_comentario)
+    if not comentario:
+        raise HTTPException(status_code=404, detail="Comentário não encontrado")
+    return comentario.autor_id
+
+# CRUDs comentarios again
+
 def atualizar_comentario(db: Session, id: int, conteudo: str):
     commentary = get_comentario(db, id)
     if commentary:
         commentary.conteudo = conteudo
         db.commit()
         db.refresh(commentary)
+    if not get_comentario(db, id):
+        raise HTTPException(status_code=404, detail="Comentário não encontrada")
     return commentary
 
 def deletar_comentario(db: Session, id: int):
@@ -79,4 +115,7 @@ def deletar_comentario(db: Session, id: int):
     if commentary:
         db.delete(commentary)
         db.commit()
+    if not commentary:
+        raise HTTPException(status_code=404, detail="Comentário não encontrada")
+
     return commentary
