@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import APIRouter, FastAPI, Depends, HTTPException, status
+from jose import JWTError, jwt
 from http import HTTPStatus
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -7,10 +8,10 @@ from models.usuario import Usuario
 from schemas.usuario import UsuarioResponse, UsuarioCreate
 from schemas.mensagem import MensagemResponse, MensagemCreate
 from schemas.comentario import ComentarioResponse, ComentarioCreate
-from schemas.token import Token
+from schemas.token import Token, RefreshTokenRequest
 from crud import *
 from database import engine, Base, get_db
-from security import create_access_token, current_user
+from security import create_access_token, create_refresh_token, current_user, SECRET_KEY, ALGORITHM
 
 app = FastAPI()
 
@@ -19,8 +20,28 @@ def login(form_data: OAuth2PasswordRequestForm=Depends(), db: Session = Depends(
     user = db.scalar(select(Usuario).where(Usuario.email == form_data.username))
     if not user or not verify_password(form_data.password, user.senha_hash):
         raise HTTPException(status_code=400, detail="Email ou Senha Inválidos")
+    
     access_token = create_access_token(data={'sub': user.email})
-    return {'access_token': access_token, 'token_type': 'Bearer'}
+    refresh_token = create_refresh_token(data={'sub': user.email})
+
+    return {'access_token': access_token,
+            'refresh_token': refresh_token,
+            'token_type': 'Bearer'
+            }
+
+@app.post("/auth/refresh", response_model=Token)
+def refresh_token(request: RefreshTokenRequest):
+    try:
+        payload = jwt.decode(request.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Token inválido")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token inválido ou expirado")
+
+    new_access_token = create_access_token(data={"sub": email})
+    return {"access_token": new_access_token, "token_type": "Bearer"}
+
 
 # Usuarios
 
