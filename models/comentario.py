@@ -8,7 +8,7 @@ class Comentario(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     conteudo = Column(String, nullable=False)
-    mensagem_id = Column(Integer, ForeignKey("mensagens.id"))
+    mensagem_id = Column(Integer, ForeignKey("mensagens.id", ondelete="CASCADE"))
     autor_id = Column(Integer, ForeignKey("usuarios.id"))
     publicado_em = Column(DateTime, default=func.now())
 

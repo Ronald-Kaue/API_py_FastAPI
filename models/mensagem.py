@@ -11,6 +11,6 @@ class Mensagem(Base):
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
 
     autor = relationship("Usuario", back_populates="mensagens")
-    comentario = relationship("Comentario", back_populates="mensagens")
+    comentario = relationship("Comentario", back_populates="mensagens", cascade="all, delete-orphan")
 
     model_config = ConfigDict(from_attributes=True)

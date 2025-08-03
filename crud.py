@@ -25,8 +25,8 @@ def get_usuario_por_email(db: Session, email: str):
 def listar_mensagens(db: Session):
     return db.scalars(select(Mensagem)).all()
 
-def criar_mensagem(db: Session, usuario_id: int, mensagem: MensagemCreate):
-    db_mensagem = Mensagem(conteudo=mensagem.conteudo, usuario_id=usuario_id)
+def criar_mensagem(db: Session, current_user, mensagem: MensagemCreate):
+    db_mensagem = Mensagem(conteudo=mensagem.conteudo, usuario_id=current_user.id)
     db.add(db_mensagem)
     db.commit()
     db.refresh(db_mensagem)
@@ -57,15 +57,11 @@ def criar_comentario(db: Session, mensagem_id: int, current_user, comentario: Co
     db.refresh(db_comentario)
     return db_comentario
 
-# def criar_comentario_com_user(db: Session, mensagem_id: int, usuario_id: int, comentario: ComentarioCreate):
-#     db_comentario = Comentario(conteudo=comentario.conteudo, mensagem_id=mensagem_id, autor_id=usuario_id)
-#     db.add(db_comentario)
-#     db.commit()
-#     db.refresh(db_comentario)
-#     return db_comentario
-
 def listar_comentario(db: Session):
     return db.scalars(select(Comentario)).all()
+
+def listar_comentario_by_msg(db: Session, id: int):
+    return db.query(Comentario).filter(Comentario.mensagem_id == id).all()
 
 def get_comentario(db: Session, id: int):
     return db.query(Comentario).filter(Comentario.id == id).first()
