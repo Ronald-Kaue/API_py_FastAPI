@@ -30,7 +30,7 @@ def listar_mensagens(db: Session):
     return db.scalars(select(Mensagem)).all()
 
 def criar_mensagem(db: Session, current_user, mensagem: MensagemCreate):
-    db_mensagem = Mensagem(conteudo=mensagem.conteudo, usuario_id=current_user.id)
+    db_mensagem = Mensagem(titulo=mensagem.titulo, conteudo=mensagem.conteudo, usuario_id=current_user.id)
     db.add(db_mensagem)
     db.commit()
     db.refresh(db_mensagem)

@@ -7,6 +7,7 @@ class Mensagem(Base):
     __tablename__ = "mensagens"
     
     id = Column(Integer, primary_key=True, index=True)
+    titulo = Column(String, nullable=False)
     conteudo = Column(String, nullable=False)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
 

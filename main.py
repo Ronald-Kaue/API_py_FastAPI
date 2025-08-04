@@ -16,6 +16,7 @@ from database import engine, Base, get_db
 from security import create_access_token, create_refresh_token, current_user, SECRET_KEY, ALGORITHM
 
 app = FastAPI()
+Base.metadata.create_all(bind=engine)
 
 @app.post("/auth/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm=Depends(), db: Session = Depends(get_db)):
@@ -101,33 +102,19 @@ def listar(id: int, db: Session = Depends(get_db)):
 @app.put("/mensagens/{id}/comentarios/{id_comentario}", response_model=ComentarioResponse)
 @comentario_owner_or_admin_required(get_comentario_owner_id)
 def update_comentario_endpoint(id: int, id_comentario: int, comentario: ComentarioCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    # comentario_var = get_comentario(db, id_comentario)
-    # if current_user.id != comentario_var.usuario_id and current_user.role != 'admin':
-    #     raise HTTPException(
-    #         status_code=HTTPStatus.BAD_REQUEST,
-    #         detail='Not enough permissions'
-    #     )
-    
-    # if not get_comentario(id=id_comentario):
-    #     raise HTTPException(status_code=404, detail="Comentário não encontrada")
-    
+    msg=get_mensagem(db, id)
+    if not msg:
+        raise HTTPException(status_code=404, detail="Mensagem não encontrada")
     commentary = atualizar_comentario(db, id_comentario, comentario.conteudo)
-        
+    
     return commentary
 
 @app.delete("/mensagens/{id}/comentarios/{id_comentario}")
 @comentario_owner_or_admin_required(get_comentario_owner_id)
 def deletar_endpoint(id: int, id_comentario: int, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    comentario = get_comentario(db, id_comentario)
-    # if current_user.id != comentario.usuario_id and current_user.role != 'admin':
-    #     raise HTTPException(
-    #         status_code=HTTPStatus.BAD_REQUEST,
-    #         detail='Not enough permissions'
-    #     )
-    
-    # if not comentario:
-    #     raise HTTPException(status_code=404, detail="Comentário não encontrada")
-    
+    msg=get_mensagem(db, id)
+    if not msg:
+        raise HTTPException(status_code=404, detail="Mensagem não encontrada")
     commentary = deletar_comentario(db, id_comentario)
-        
+    
     return {"INFO": "Comentário deletada com sucesso"}

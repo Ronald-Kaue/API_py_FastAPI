@@ -2,6 +2,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class MensagemBase(BaseModel):
+    titulo: str
     conteudo: str
 
 class MensagemCreate(MensagemBase):
