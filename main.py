@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
 from jose import JWTError, jwt
-from http import HTTPStatus
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from security import verify_password
@@ -74,7 +73,7 @@ def get_mensagem_endpoint(id: int, db: Session = Depends(get_db)):
 @app.put("/mensagens/{id}", response_model=MensagemResponse)
 @owner_or_admin_required(get_mensagem_owner_id)
 def update_mensagem_endpoint(id: int, mensagem: MensagemCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
-    msg = atualizar_mensagem(db, id, mensagem.conteudo)
+    msg = atualizar_mensagem(db, id, mensagem.titulo, mensagem.conteudo)
     
     return msg
 

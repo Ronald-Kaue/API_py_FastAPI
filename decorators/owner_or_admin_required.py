@@ -12,7 +12,7 @@ def owner_or_admin_required(get_owner_id_func):
             if current_user.id != owner_id and current_user.role != 'admin':
                 raise HTTPException(
                     status_code=HTTPStatus.FORBIDDEN,
-                    detail='Permissão negada'
+                    detail='{"error": "Você não tem permissão para alterar esta mensagem"}'
                 )
             return f(id, *args, db=db, current_user=current_user, **kwargs)
         return wrapper

@@ -9,16 +9,18 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from security import get_password_hash
 
+def criar_usuario(db: Session, usuario: UsuarioCreate):
+    if usuario.senha == "" or None and usuario.email == "" or None and usuario.nome == "" or None:
+        senha_hash = get_password_hash(usuario.senha)
+        db_usuario = Usuario(nome=usuario.nome, email=usuario.email, senha_hash=senha_hash, role = usuario.role)
+        db.add(db_usuario)
+        db.commit()
+        db.refresh(db_usuario)
+        return db_usuario
+    else:
+        return {"errors": {"email": ["Campo obrigatório."], "senha": ["Campo obrigatório."]}}
 
 # CRUDs mensagens
-
-def criar_usuario(db: Session, usuario: UsuarioCreate):
-    senha_hash = get_password_hash(usuario.senha)
-    db_usuario = Usuario(nome=usuario.nome, email=usuario.email, senha_hash=senha_hash, role = usuario.role)
-    db.add(db_usuario)
-    db.commit()
-    db.refresh(db_usuario)
-    return db_usuario
 
 def get_usuario(db: Session, id: str):
     return db.query(Usuario).filter(Usuario.id == id).first()
@@ -48,14 +50,22 @@ def get_mensagem_owner_id(db, id):
     return mensagem.usuario_id
 
 # CRUDs mensagens again
-def atualizar_mensagem(db: Session, id: int, conteudo: str):
+def atualizar_mensagem(db: Session, id: int, titulo: str, conteudo: str):
+    if not msg:
+        raise HTTPException(status_code=404, detail="Mensagem não encontrada")
+    
     msg = get_mensagem(db, id)
-    if msg:
+    if msg.titulo:
+        msg.titulo = titulo
+        db.commit()
+        db.refresh(msg)
+    
+    if msg.conteudo:
         msg.conteudo = conteudo
         db.commit()
         db.refresh(msg)
-    if not msg:
-        raise HTTPException(status_code=404, detail="Mensagem não encontrada")
+    else:
+        return {"errors": {"conteudo": ["Campo obrigatório."]}}
     
     return msg
 
