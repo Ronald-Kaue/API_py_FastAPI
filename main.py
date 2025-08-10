@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -47,7 +47,7 @@ def refresh_token(request: RefreshTokenRequest):
 
 # Usuarios
 
-@app.post("/usuarios", response_model=UsuarioResponse)
+@app.post("/usuarios", response_model=UsuarioResponse, status_code=status.HTTP_201_CREATED)
 def criar_usuario_endpoint(usuario: UsuarioCreate, db: Session = Depends(get_db)):
     if get_usuario_por_email(db, usuario.email):
         raise HTTPException(status_code=400, detail="Email já cadastrado")
@@ -55,7 +55,7 @@ def criar_usuario_endpoint(usuario: UsuarioCreate, db: Session = Depends(get_db)
 
 # Mensagens
 
-@app.post("/mensagens", response_model=MensagemResponse)
+@app.post("/mensagens", response_model=MensagemResponse, status_code=status.HTTP_201_CREATED)
 def criar_mensagem_endpoint(mensagem: MensagemCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
     return criar_mensagem(db, current_user, mensagem)
 

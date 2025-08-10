@@ -10,15 +10,15 @@ from sqlalchemy import select
 from security import get_password_hash
 
 def criar_usuario(db: Session, usuario: UsuarioCreate):
-    if usuario.senha == "" or None and usuario.email == "" or None and usuario.nome == "" or None:
-        senha_hash = get_password_hash(usuario.senha)
-        db_usuario = Usuario(nome=usuario.nome, email=usuario.email, senha_hash=senha_hash, role = usuario.role)
-        db.add(db_usuario)
-        db.commit()
-        db.refresh(db_usuario)
-        return db_usuario
-    else:
-        return {"errors": {"email": ["Campo obrigatório."], "senha": ["Campo obrigatório."]}}
+    if not usuario.senha or not usuario.email or not usuario.nome:
+        error = {"errors": {"email": ["Campo obrigatório."], "senha": ["Campo obrigatório."]}}
+        raise ValueError(error)
+    senha_hash = get_password_hash(usuario.senha)
+    db_usuario = Usuario(nome=usuario.nome, email=usuario.email, senha_hash=senha_hash, role = usuario.role)
+    db.add(db_usuario)
+    db.commit()
+    db.refresh(db_usuario)
+    return db_usuario
 
 # CRUDs mensagens
 
@@ -51,10 +51,11 @@ def get_mensagem_owner_id(db, id):
 
 # CRUDs mensagens again
 def atualizar_mensagem(db: Session, id: int, titulo: str, conteudo: str):
+    msg = get_mensagem(db, id)
+    
     if not msg:
         raise HTTPException(status_code=404, detail="Mensagem não encontrada")
     
-    msg = get_mensagem(db, id)
     if msg.titulo:
         msg.titulo = titulo
         db.commit()
