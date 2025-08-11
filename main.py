@@ -86,7 +86,7 @@ def deletar_endpoint(id: int, db: Session = Depends(get_db), current_user=Depend
 
 # Comentarios
 
-@app.post("/mensagens/{id}/comentarios", response_model=ComentarioResponse)
+@app.post("/mensagens/{id}/comentarios", response_model=ComentarioResponse, status_code=status.HTTP_201_CREATED)
 def criar_comentario_endpoint(id: int, comentario: ComentarioCreate, db: Session = Depends(get_db), current_user=Depends(current_user)):
     return criar_comentario(db, id, current_user, comentario)
 
