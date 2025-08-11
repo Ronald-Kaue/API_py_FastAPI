@@ -3,8 +3,8 @@ from requests.exceptions import RequestException
 
 BASE_URL = "http://127.0.0.1:8000"  # ajuste se necessário
 
-USER_A = {"nome": "User A", "email": "user_a@example.com", "senha": "Senha@123", "role": "admin"}
-USER_B = {"nome": "User B", "email": "user_b@example.com", "senha": "Senha@123", "role": "user"}
+USER_A = {"nome": "User A", "email": "user_1@example.com", "senha": "Senha@123", "role": "admin"}
+USER_B = {"nome": "User B", "email": "user_2@example.com", "senha": "Senha@123", "role": "user"}
 
 def safe_call(method, url, **kwargs):
     try:
@@ -147,7 +147,7 @@ def main():
                 else:
                     print("   ❌ Faltando id ou data_criacao no comentário.")
             else:
-                print(f"   ❌ Esperado 201, obtido: {r8.status_code}")
+                print(f"   ❌ Esperado 201, obtido: {r8.status_code}, {r8.reason}")
         else:
             print("   ❌ Sem resposta da API.")
 

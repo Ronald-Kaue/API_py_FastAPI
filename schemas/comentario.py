@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict
+from datetime import datetime
 
 
 class ComentarioBase(BaseModel):
@@ -10,5 +11,6 @@ class ComentarioCreate(ComentarioBase):
 class ComentarioResponse(ComentarioBase):
     id: int
     mensagem_id: int
+    data_criacao: datetime
 
     model_config = ConfigDict(from_attributes=True)

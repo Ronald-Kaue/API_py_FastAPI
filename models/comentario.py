@@ -10,7 +10,7 @@ class Comentario(Base):
     conteudo = Column(String, nullable=False)
     mensagem_id = Column(Integer, ForeignKey("mensagens.id", ondelete="CASCADE"))
     autor_id = Column(Integer, ForeignKey("usuarios.id"))
-    publicado_em = Column(DateTime, default=func.now())
+    data_criacao = Column(DateTime, default=func.now())
 
     autor = relationship("Usuario", back_populates="comentario")
     mensagens = relationship("Mensagem", back_populates="comentario")
