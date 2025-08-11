@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, func, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
+from zoneinfo import ZoneInfo
+from datetime import datetime
 from database import Base
 from pydantic import ConfigDict
 
@@ -11,6 +13,7 @@ class Usuario(Base):
     email = Column(String, unique=True, index=True)
     senha_hash = Column(String, nullable=False)
     role = Column(String, nullable=False, default = "user")
+    publicado_em = Column(DateTime, default=func.now())
     
     mensagens = relationship("Mensagem", back_populates="autor")
     comentario = relationship("Comentario", back_populates="autor")
